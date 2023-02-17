@@ -1,1 +1,5 @@
-移动节流
+```javascript
+id => magic() =>reducer()=>element=>event()
+```
+
+                                                                                   

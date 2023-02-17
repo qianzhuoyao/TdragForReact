@@ -4,7 +4,7 @@ import {
     concatAll,
     takeUntil,
     withLatestFrom,
-    map,
+    map, takeWhile,
 } from "rxjs";
 
 type eventRunName =
@@ -27,6 +27,8 @@ export default class DragEvent {
     private readonly mouseUpObserver: Observable<Event> | null = null;
     private liveOfEvent: ILiveOfEvent = {}
     private resultOfDrag: IResultOfDrag = {}
+    private stop: boolean = false
+    private E: HTMLElement | null = null
 
     constructor(HTMLElement: HTMLElement) {
         this.mouseDownObserver = fromEvent(HTMLElement, 'mousedown');
@@ -36,7 +38,19 @@ export default class DragEvent {
         document.onselectstart = (i) => i.preventDefault();
         document.ondragstart = () => false;
         this.LoadDragEvent(HTMLElement)
+        this.E = HTMLElement
     };
+
+    public cancel() {
+        this.stop = true
+    }
+
+    public open() {
+        if (this.E) {
+            this.stop = false
+            this.LoadDragEvent(this.E)
+        }
+    }
 
     /**
      * 载入事件
@@ -45,14 +59,13 @@ export default class DragEvent {
     private LoadDragEvent(HTMLElement: HTMLElement) {
         if (this.mouseDownObserver && this.mouseMoveObserver && this.mouseUpObserver) {
             this.mouseDownObserver.pipe(
+                takeWhile(() => !this.stop),
                 map((evt: Event) => {
-                    //  console.log(evt, 'down_ob')
                     if (this.liveOfEvent.mousedown_enter) {
                         this.liveOfEvent.mousedown_enter(evt)
                     }
                     return (this.mouseMoveObserver as Observable<Event>).pipe(
                         map((evt: Event) => {
-                            //  console.log(evt, 'move_ob')
                             if (this.liveOfEvent.mousemove_moving) {
                                 this.liveOfEvent.mousemove_moving(evt)
                             }
@@ -60,7 +73,6 @@ export default class DragEvent {
                         takeUntil(
                             (this.mouseUpObserver as Observable<Event>).pipe(
                                 map((evt: Event) => {
-                                    //  console.log(evt, 'up_ob')
                                     if (this.liveOfEvent.mouseup_put) {
                                         this.liveOfEvent.mouseup_put(evt)
                                     }
@@ -94,9 +106,10 @@ export default class DragEvent {
                 })
             )
                 .subscribe(({x, y}) => {
-                    HTMLElement.style.left = x + 'px'
-                    HTMLElement.style.top = y + 'px'
-                    //console.log({x, y}, 'result')
+                    if (!this.stop) {
+                        HTMLElement.style.left = x + 'px'
+                        HTMLElement.style.top = y + 'px'
+                    }
                 });
         }
     };

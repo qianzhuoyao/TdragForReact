@@ -1,10 +1,10 @@
 import DragEvent from "./dragEvent";
 
 export default class DragElement {
-    private id: number = -1;
+    private id: string = '';
     private SELF: DragEvent | null = null;
 
-    constructor(id: number) {
+    constructor(id: string) {
         this.id = id;
     };
 
@@ -14,6 +14,14 @@ export default class DragElement {
     public init(HTMLElement: HTMLElement) {
         this.makeSelfMovable(HTMLElement);
     };
+
+    public stop() {
+        this.SELF?.cancel()
+    }
+
+    public reStart() {
+        this.SELF?.open()
+    }
 
     /**
      * 使SELF可移动
