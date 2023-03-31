@@ -73,23 +73,7 @@ export default class DragEvent {
                         takeUntil(
                             (this.mouseUpObserver as Observable<Event>).pipe(
                                 map((evt: Event) => {
-                                    if (this.liveOfEvent.mouseup_put) {
-                                        this.liveOfEvent.mouseup_put(evt)
-                                    }
-                                    if ((evt as MouseEvent).pageX !== parseFloat(HTMLElement.style.left) ||
-                                        (evt as MouseEvent).pageY !== parseFloat(HTMLElement.style.top)
-                                    ) {
-                                        if (this.resultOfDrag.drag_result_fail) {
-                                            this.resultOfDrag.drag_result_fail()
-                                        }
-                                    } else {
-                                        if (this.resultOfDrag.drag_result_success) {
-                                            this.resultOfDrag.drag_result_success()
-                                        }
-                                    }
-                                    if (this.resultOfDrag.drag_result_finally) {
-                                        this.resultOfDrag.drag_result_finally()
-                                    }
+                                    this.mixinEvent(evt, HTMLElement)
                                 })
                             )
                         )
@@ -113,6 +97,26 @@ export default class DragEvent {
                 });
         }
     };
+
+    private mixinEvent(evt: Event, HTMLElement: HTMLElement) {
+        if (this.liveOfEvent.mouseup_put) {
+            this.liveOfEvent.mouseup_put(evt)
+        }
+        if ((evt as MouseEvent).pageX !== parseFloat(HTMLElement.style.left) ||
+            (evt as MouseEvent).pageY !== parseFloat(HTMLElement.style.top)
+        ) {
+            if (this.resultOfDrag.drag_result_fail) {
+                this.resultOfDrag.drag_result_fail()
+            }
+        } else {
+            if (this.resultOfDrag.drag_result_success) {
+                this.resultOfDrag.drag_result_success()
+            }
+        }
+        if (this.resultOfDrag.drag_result_finally) {
+            this.resultOfDrag.drag_result_finally()
+        }
+    }
 
     /**
      * 事件回调
